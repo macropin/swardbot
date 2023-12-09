@@ -1,6 +1,6 @@
-# SwardBot: Open Source Acreage UGV rover
+# SwardBot: Open Source Acreage Mower
 
-Welcome to SwardBot, an open-source hardware project designed to simplify pasture and acreage mowing! SwardBot is an Ardupilot-based mower built with the vision of making large-scale grass maintenance accessible, affordable, and customizable for everyone.
+Welcome to SwardBot, an open-source hardware project designed to simplify pasture and acreage mowing! SwardBot is an Ardupilot-based mower built with the vision of making large-scale grass maintenance accessible, affordable, and customizable for everyone. (Keywords: UGV, mower, Ardupilot, rover)
 
 ## Project Goals
 
