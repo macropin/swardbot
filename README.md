@@ -26,7 +26,7 @@ As an open-source project, SwardBot thrives on community contributions. We welco
 
 ## Getting Started
 
-To get started with SwardBot, check out the documentation in the 'docs' directory of this repository. You'll find detailed instructions on sourcing components, assembling the mower, and customizing its features. If you encounter any issues or have suggestions for improvement, please engage with the community through our forums and contribute to the project's growth.
+To get started with SwardBot, check out the documentation in the '[docs](docs)' directory of this repository. You'll find detailed instructions on sourcing components, assembling the mower, and customizing its features. If you encounter any issues or have suggestions for improvement, please engage with the community through our forums and contribute to the project's growth.
 
 Let's mow the future together with SwardBot! Happy mowing!
 
