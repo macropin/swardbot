@@ -5,3 +5,5 @@ Blades are available in a range of standard sizes. The SwardBot will standardise
 25cm: https://www.aliexpress.us/item/1005006209308625.html
 
 34cm: https://www.amazon.com.au/Redpart-340mm-Lawnmower-Blade-Bosch/dp/B0B1JFTT82
+
+40cm: https://www.amazon.com.au/Lawnmower-Blade-Bosch-Rotak-Ergoflex/dp/B07CN6PWG8
