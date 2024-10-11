@@ -8,6 +8,7 @@ Some motor rpm / blade length calculations:
 
 | RPM  | Blade Length (cm) | Speed (mph) | Speed (km/h) |
 | ---- | ----------------- | ----------- | ------------ |
+| 2900 | 40                | 135         | 219          |
 | 3000 | 45                | 158         | 254          |
 | 5000 | 34                | 199         | 320          |
 | 6000 | 30                | 210         | 338          |
