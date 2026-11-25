@@ -40,4 +40,3 @@ What's left before SwardBot can run, beyond the chassis in [Mechanical design](m
   - the blade's centre hole.
 - [ ] **First test prints:** a front node, an end cap, a battery stop and the drill jig. Fit them on offcuts of the real tube to check `fitTolerance`, `clampSqueeze` and strength before printing the rest.
 - [ ] **Sweep the parameter limits:** a `make sweep`, like gorillacart's, that builds the layout and parts at each parameter's limits, to find which ranges actually build.
-- [ ] **Update the README.** It still says parts are being ordered, and it doesn't link the design or show the renders.

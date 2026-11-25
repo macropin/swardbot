@@ -92,6 +92,10 @@ $(MEDIA)/%-side.png: $(OUT)/%/shots/front.png
 $(MEDIA)/%.png: $(OUT)/%/shots/iso.png
 	@if command -v magick >/dev/null 2>&1; then $(CROP) && echo "preview -> $@"; else cp $< $@; fi
 
+## views: render the whole mower in colour from several angles, for the README (media/views/; VIEWS="side top" for some)
+views: node_modules
+	@node scripts/render-views.mjs $(VIEWS)
+
 ## preview: open the live viewer for PART or SCENE, re-evaluating on save
 preview: node_modules
 	@if [ -n "$(PART)" ]; then $(BREP) preview src/$(PART).brep.ts --watch; \
@@ -113,11 +117,11 @@ export: node_modules
 		$(BREP) export src/assemblies/$$s.brep.ts --step --out $(OUT)/$$s; \
 	done
 
-## all: verify, render and export
-all: verify render export
+## all: verify, render, render the views and export
+all: verify render views export
 
 ## clean: remove generated artifacts (keeps the media/ previews)
 clean:
 	rm -rf $(OUT)
 
-.PHONY: help install layout typecheck verify render preview export all clean
+.PHONY: help install layout typecheck verify render views preview export all clean

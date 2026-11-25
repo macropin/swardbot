@@ -15,6 +15,7 @@ make            # list the targets
 make layout     # print the layout, mass budget, checks and cut list
 make verify     # type-check, pass the layout checks, and verify each part
 make render     # render each part and scene, and refresh media/
+make views      # render the whole mower in colour from several angles, into media/views/ (VIEWS="side top" for some)
 make export     # STEP + STL of each printed part, STEP of each machined part and scene, into out/
 make preview SCENE=mower   # live viewer, re-evaluates on save
 make clean      # drop out/

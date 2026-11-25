@@ -24,10 +24,11 @@ import {
 
 import { layout, type Box3, type Layout, type Member, type Vec3 } from '../layout.js';
 import { bladeAdapterBodies } from '../blade-solid.js';
-import { fittingBodies } from '../fittings-solid.js';
+import { fittings } from '../fittings.js';
+import { deckRodBodies, fittingBodies } from '../fittings-solid.js';
 import { frontBeamBodies } from '../front-beam-solid.js';
 import { installed, nodeHalf } from '../node-solid.js';
-import { nodes } from '../nodes.js';
+import { nodeDims, nodes } from '../nodes.js';
 import { single } from '../solid.js';
 
 /** Overshoot so cuts clear the faces instead of leaving zero-thickness skins. */
@@ -64,7 +65,8 @@ const block = (b: Box3): ValidSolid =>
     at: [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, (b.min[2] + b.max[2]) / 2],
   });
 
-function driveWheel(l: Layout, y: number): ValidSolid {
+/** A drive wheel: its tyre, and the hub motor with its axle stub. */
+function driveWheel(l: Layout, y: number): { tyre: ValidSolid; hub: ValidSolid } {
   const { wheelWidth, axleDiameter } = l.params;
   const tyreR = wheelWidth / 2;
   const tyre = torus(l.wheel.radius - tyreR, tyreR, { at: [0, y, l.wheel.axleZ], axis: [0, 1, 0] });
@@ -80,10 +82,11 @@ function driveWheel(l: Layout, y: number): ValidSolid {
     at: [0, face, l.wheel.axleZ],
     axis: [0, inward, 0],
   });
-  return single(unwrap(fuse(single(unwrap(fuse(tyre, hub))), stub)));
+  return { tyre: single(unwrap(cut(tyre, hub))), hub: single(unwrap(fuse(hub, stub))) };
 }
 
-function castor(l: Layout, y: number): ValidSolid {
+/** A castor: its plate and fork, and its wheel on the axle. */
+function castor(l: Layout, y: number): { fork: ValidSolid; wheel: ValidSolid } {
   const p = l.params;
   const x = l.wheelbase;
   const plate = box(p.castorPlateLength, p.castorPlateWidth, 4, {
@@ -113,12 +116,13 @@ function castor(l: Layout, y: number): ValidSolid {
     at: [wheelX, y - (p.castorWheelWidth + 12) / 2, r],
     axis: [0, 1, 0],
   });
-  const body = single(unwrap(fuse(plate, single(unwrap(cut(fork, slot))))));
-  const wheelOnAxle = single(unwrap(fuse(wheel, axle)));
-  return single(unwrap(fuse(body, wheelOnAxle)));
+  return {
+    fork: single(unwrap(fuse(plate, single(unwrap(cut(fork, slot)))))),
+    wheel: single(unwrap(fuse(wheel, axle))),
+  };
 }
 
-function deckBodies(l: Layout): ValidSolid[] {
+function tray(l: Layout): ValidSolid {
   const p = l.params;
   const d = l.deck;
   const outer = cylinder(p.trayDiameter / 2 + TRAY_SHEET, p.trayDepth, { at: [d.x, 0, d.trayBottom] });
@@ -126,17 +130,29 @@ function deckBodies(l: Layout): ValidSolid[] {
     at: [d.x, 0, d.trayBottom - OVER],
   });
   const lip = cylinder(l.deck.radius, 3, { at: [d.x, 0, d.trayBottom] });
-  const tray = single(unwrap(cut(single(unwrap(fuse(outer, lip))), inner)));
-
-  const blade = box(p.bladeDiameter, 45, 4, { centered: true, at: [d.x, 0, d.bladeZ] });
-  const motor = cylinder(p.mowerMotorDiameter / 2, p.mowerMotorLength, { at: [d.x, 0, d.motorZ] });
-  const shaft = cylinder(8, d.motorZ - d.bladeZ, { at: [d.x, 0, d.bladeZ] });
-  return [tray, blade, motor, shaft];
+  return single(unwrap(cut(single(unwrap(fuse(outer, lip))), inner)));
 }
 
-function topBodies(l: Layout): ValidSolid[] {
-  const antennas = l.antennas.map((a) => cylinder(45, 18, { at: a }));
-  return [block(l.electronics), ...antennas];
+const blade = (l: Layout) =>
+  box(l.params.bladeDiameter, 45, 4, { centered: true, at: [l.deck.x, 0, l.deck.bladeZ] });
+
+function mowerMotor(l: Layout): ValidSolid[] {
+  const p = l.params;
+  const d = l.deck;
+  const motor = cylinder(p.mowerMotorDiameter / 2, p.mowerMotorLength, { at: [d.x, 0, d.motorZ] });
+  const shaft = cylinder(8, d.motorZ - d.bladeZ, { at: [d.x, 0, d.bladeZ] });
+  return [motor, shaft];
+}
+
+const antennas = (l: Layout) => l.antennas.map((a) => cylinder(45, 18, { at: a }));
+
+/** The e-stop's mushroom head and its collar, on top of its housing. */
+function estopButton(l: Layout): ValidSolid {
+  const e = fittings(l).estop;
+  const top = l.params.apexHeight + nodeDims(l).thickness + e.depth + e.top;
+  const collar = cylinder(e.hole + 4, 8, { at: [0, 0, top - OVER] });
+  const head = cylinder(20, 12, { at: [0, 0, top + 8 - OVER] });
+  return single(unwrap(fuse(collar, head)));
 }
 
 /** Both halves of every node, on both side frames. */
@@ -148,19 +164,68 @@ export function nodeBodies(l: Layout = layout()): ValidSolid[] {
   );
 }
 
-/** Every body of the mower, in the layout's frame. */
-export function mowerBodies(l: Layout = layout()): AnyShape[] {
-  const frame = [
-    ...l.members.map((m) => tube(m, l.tube.size, l.tube.wall)),
-    ...nodeBodies(l),
-    ...frontBeamBodies(l),
-    ...fittingBodies(l),
-    ...bladeAdapterBodies(l),
-  ];
+/** What a group of bodies is made of, for colouring a render. */
+export type Material =
+  | 'aluminium'
+  | 'printed'
+  | 'steel'
+  | 'stainless'
+  | 'rubber'
+  | 'hub'
+  | 'castor'
+  | 'battery'
+  | 'motor'
+  | 'enclosure'
+  | 'antenna'
+  | 'button';
+
+export interface PartGroup {
+  readonly name: string;
+  readonly material: Material;
+  readonly bodies: readonly ValidSolid[];
+}
+
+/**
+ * The mower's bodies, grouped by what they are. The groups from `front beam`
+ * on are everything that rolls on the pivot pin: the beam, its saddle and
+ * castor pads, the pin and the castors.
+ */
+export function mowerGroups(l: Layout = layout()): PartGroup[] {
+  const frontBeamTubes = l.members.filter((m) => m.group === 'front beam');
+  const tubes = l.members.filter((m) => m.group !== 'front beam');
+  const fb = frontBeamBodies(l);
+  // frontBeamBodies: saddle ×2, hanger cap, hanger, castor pads ×4, the pin.
+  const [saddleUpper, saddleLower, hangerCap, hangerLower, ...rest] = fb;
+  const pads = rest.slice(0, -1);
+  const pin = rest[rest.length - 1]!;
   const wheels = [l.wheel.y, -l.wheel.y].map((y) => driveWheel(l, y));
   const castors = [l.castor.y, -l.castor.y].map((y) => castor(l, y));
-  const batteries = l.batteries.map(block);
-  return [...frame, ...wheels, ...castors, ...batteries, ...deckBodies(l), ...topBodies(l)];
+  return [
+    { name: 'frame', material: 'aluminium', bodies: tubes.map((m) => tube(m, l.tube.size, l.tube.wall)) },
+    { name: 'nodes', material: 'printed', bodies: nodeBodies(l) },
+    { name: 'pivot hanger', material: 'printed', bodies: [hangerCap!, hangerLower!] },
+    { name: 'fittings', material: 'printed', bodies: fittingBodies(l) },
+    { name: 'deck rods', material: 'steel', bodies: deckRodBodies(l) },
+    { name: 'tyres', material: 'rubber', bodies: wheels.map((w) => w.tyre) },
+    { name: 'hub motors', material: 'hub', bodies: wheels.map((w) => w.hub) },
+    { name: 'batteries', material: 'battery', bodies: l.batteries.map(block) },
+    { name: 'tray', material: 'stainless', bodies: [tray(l)] },
+    { name: 'blade', material: 'steel', bodies: [blade(l), ...bladeAdapterBodies(l)] },
+    { name: 'mower motor', material: 'motor', bodies: mowerMotor(l) },
+    { name: 'electronics box', material: 'enclosure', bodies: [block(l.electronics)] },
+    { name: 'antennas', material: 'antenna', bodies: antennas(l) },
+    { name: 'e-stop', material: 'button', bodies: [estopButton(l)] },
+    { name: 'front beam', material: 'aluminium', bodies: frontBeamTubes.map((m) => tube(m, l.tube.size, l.tube.wall)) },
+    { name: 'front beam printed', material: 'printed', bodies: [saddleUpper!, saddleLower!, ...pads] },
+    { name: 'pivot pin', material: 'steel', bodies: [pin] },
+    { name: 'castors', material: 'castor', bodies: castors.map((c) => c.fork) },
+    { name: 'castor wheels', material: 'rubber', bodies: castors.map((c) => c.wheel) },
+  ];
+}
+
+/** Every body of the mower, in the layout's frame. */
+export function mowerBodies(l: Layout = layout()): AnyShape[] {
+  return mowerGroups(l).flatMap((g) => g.bodies);
 }
 
 export default function mowerScene(): Compound {

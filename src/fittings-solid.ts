@@ -357,6 +357,16 @@ const turnX = (s: ValidSolid) => rotate(s, 180, { axis: [1, 0, 0] });
 const turnZ = (s: ValidSolid) => rotate(s, 180, { axis: [0, 0, 1] });
 
 /** Every fitting on the mower, in the layout's frame, and the deck's rods. */
+/** The deck's four threaded rods, from the deck plate up through the hanger blocks. */
+export function deckRodBodies(l: Layout): ValidSolid[] {
+  return l.deck.rodX.flatMap((x) =>
+    [-l.deck.rodY, l.deck.rodY].map((y) =>
+      cylinder(l.params.deckRod / 2, l.deck.rodLength, { at: [x, y, l.deck.plateBottom] }),
+    ),
+  );
+}
+
+/** Every printed fitting, on the mower. */
 export function fittingBodies(l: Layout): ValidSolid[] {
   const f = fittings(l);
   const p = l.params;
@@ -375,11 +385,6 @@ export function fittingBodies(l: Layout): ValidSolid[] {
     }
   }
   out.push(translate(local('deck-plate', l, f), [l.deck.x, 0, l.deck.plateBottom]));
-  for (const x of l.deck.rodX) {
-    for (const y of [-l.deck.rodY, l.deck.rodY]) {
-      out.push(cylinder(p.deckRod / 2, l.deck.rodLength, { at: [x, y, l.deck.plateBottom] }));
-    }
-  }
 
   const { zc } = backplateFrame(f);
   const backplate = rotate(rotate(local('electronics-backplate', l, f), 90, { axis: [1, 0, 0] }), -90, { axis: [0, 0, 1] });
