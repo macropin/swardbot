@@ -13,6 +13,8 @@ Consider using a stainless baking tray. These appear to be available in a range 
 https://www.stellinox.com/269-sea-food-tray-o-36-stainless-steel-18-10-3118705000373.html 
 https://classichomewaregifts.com.au/products/stainless-steel-round-baking-tray-36-cm
 
+A paella pan is another option. They come in many sizes, so a bigger blade is easy to cover. Choose a stainless or enamelled one, because plain carbon steel pans rust. A pan's sides flare, and it is sold by its rim diameter. Upturned, the blade turns near the pan's base, which is narrower, so measure the base. The handles can be cut off.
+
 ### References
 
 - https://mowerproject.com/2018/10/21/mower-design-how-many-blades/

@@ -8,8 +8,8 @@ The design target is currently the following:
 - 2 x 10" rear wheels with BLDC hub motor and encoders
 - 2 x 5" front castor wheels
 - 400W mower motor
-- 40cm blade width
+- 34cm blade under a 36cm stainless tray
 
-Chassis will be fabricated from either 2020/4040 aluminium profile, or uni-strut, or possibly steel section depending on availability.
+Chassis is 25.4mm square aluminium tube (Bunnings), cut square and joined with 3D-printed nodes. 2020 extrusion is a possible variant. See [Mechanical design](mechanical-design.md).
 
-The chassis will employ a zero-turn kinematic design. Final dimensions to be determined.
+The chassis will employ a zero-turn kinematic design. Dimensions are parametric, worked out from the components in [src/layout.ts](../src/layout.ts).
